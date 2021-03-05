@@ -62,6 +62,7 @@ class box:
         self.L4 = Line.CreateBound(self.p4, self.p1)
 
         #if room, draw filled region, else draw detail lines
+        #not room would be a group
         if self.isRoom:
             self.cLoop = CurveLoop.Create(List[Curve]([self.L1, self.L2, self.L3, self.L4]))
             FilledRegion.Create(doc, filledRegionTypeID, revit.active_view.Id, List[CurveLoop]([self.cLoop]))
@@ -216,8 +217,8 @@ for dept in depts.values():
                 room.draw(origx, origy)
                 if i == 0:
                     room.label()
-                origx += (room.height + xoffset)
-            origx = 0
+                origx += (room.width + xoffset)
+            origx = dept.x
             origy -= (room.height + ybreak)
         else:
             room.draw(origx, origy)
