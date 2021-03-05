@@ -210,20 +210,22 @@ for room in programData:
 """
 for dept in depts.values():
     dept.draw(origx, origy)
+    rOrigx = origx + xoffset
+    rOrigy = origy - yoffset - 10 #extra -10 for text height
     for room in dept.rooms:
         room.rect()
         if room.qty > 1:
             for i in range(room.qty):
-                room.draw(origx, origy)
+                room.draw(rOrigx, rOrigy)
                 if i == 0:
                     room.label()
-                origx += (room.width + xoffset)
-            origx = dept.x
-            origy -= (room.height + ybreak)
+                rOrigx += (room.width + xoffset)
+            rOrigx = dept.x + xoffset
+            rOrigy -= (room.height + ybreak)
         else:
-            room.draw(origx, origy)
+            room.draw(rOrigx, rOrigy)
             room.label()
-            origy -= (room.height + ybreak)
+            rOrigy -= (room.height + ybreak)
     origx += dept.width + 5
     origy = 0
 
