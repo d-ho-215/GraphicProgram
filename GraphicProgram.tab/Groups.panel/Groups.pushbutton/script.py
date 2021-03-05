@@ -176,6 +176,7 @@ t.Start()
 xoffset = 2
 yoffset = 2
 ybreak = 20
+yMroomBreak = 2 # for multiple room breaks
 origx = 0
 origy = 0
 
@@ -212,20 +213,30 @@ for dept in depts.values():
     dept.draw(origx, origy)
     rOrigx = origx + xoffset
     rOrigy = origy - yoffset - 10 #extra -10 for text height
+    maxRheight = 0
     for room in dept.rooms:
         room.rect()
+#        if rOrigx + room.width + 5 >= origx + dept.width:
+#            rOrigx = origx + xoffset
+#            rOrigy -= maxRheight + ybreak
         if room.qty > 1:
             for i in range(room.qty):
-                room.draw(rOrigx, rOrigy)
                 if i == 0:
+                    room.draw(rOrigx, rOrigy)
                     room.label()
-                rOrigx += (room.width + xoffset)
-            rOrigx = dept.x + xoffset
-            rOrigy -= (room.height + ybreak)
+                elif rOrigx + (2 *room.width) + xoffset >= dept.xw:
+                    rOrigx = dept.x + xoffset
+                    rOrigy -= (room.height + yMroomBreak)
+                    room.draw(rOrigx, rOrigy)
+                else:
+                    rOrigx += (room.width + xoffset)
+                    room.draw(rOrigx, rOrigy)
         else:
             room.draw(rOrigx, rOrigy)
             room.label()
-            rOrigy -= (room.height + ybreak)
+        rOrigx = dept.x + xoffset
+        rOrigy -= (room.height + ybreak)
+
     origx += dept.width + 5
     origy = 0
 
