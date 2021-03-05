@@ -167,6 +167,12 @@ class group(box):
             room.draw(currentx, currenty)
             self.currentx = self.currentx + self.offset + room.width
             
+    def label(self):
+        #TextNote.Create(document, viewId, XYZ, text, typeId)
+        self.textPt = XYZ(self.x, self.y + 10, 0)
+        titleText = "Department: {name}".format(name = self.name)
+        TextNote.Create(doc, revit.active_view.Id, self.textPt, titleText, textTypeID)
+            
 
 
 
@@ -211,6 +217,7 @@ for room in programData:
 """
 for dept in depts.values():
     dept.draw(origx, origy)
+    dept.label()
     rOrigx = origx + xoffset
     rOrigy = origy - yoffset - 10 #extra -10 for text height
     maxRheight = 0
