@@ -6,6 +6,7 @@ __author__ = "Daniel Howard, Ballinger"
 from Autodesk.Revit.DB import *
 from Autodesk.Revit.Creation import *
 from pyrevit import revit, DB
+from pyrevit import forms
 from System.Collections.Generic import List #import ILists type
 
 import math
@@ -13,9 +14,10 @@ import csv
 import os
 
 
-os.chdir('C:\\Users\\howar\\Documents\\MypyRevitExtensions\\Test Files')
+#os.chdir('C:\\Users\\howar\\Documents\\MypyRevitExtensions\\Test Files')
+csv_file = forms.pick_file(files_filter='CSV files | *.csv')
 
-programCsv = open('Test Program.csv')
+programCsv = open(csv_file)
 programReader = csv.reader(programCsv)
 programData = list(programReader)
 programCsv.close()
@@ -156,16 +158,16 @@ class group(box):
     def addroom(self, room):
         self.rooms.append(room)
 
-    def setstarts(self):
-        self.xstart = self.x + self.margin
-        self.ystart = self.y - self.voffset
-        self.currentx = self.xstart
-        self.currenty = self.ystart
+#    def setstarts(self):
+#        self.xstart = self.x + self.margin
+#        self.ystart = self.y - self.voffset
+#        self.currentx = self.xstart
+#        self.currenty = self.ystart
 
-    def drawrooms(self):
-        for room in self.rooms:
-            room.draw(currentx, currenty)
-            self.currentx = self.currentx + self.offset + room.width
+#    def drawrooms(self):
+#        for room in self.rooms:
+#            room.draw(currentx, currenty)
+#            self.currentx = self.currentx + self.offset + room.width
             
     def label(self):
         #TextNote.Create(document, viewId, XYZ, text, typeId)
