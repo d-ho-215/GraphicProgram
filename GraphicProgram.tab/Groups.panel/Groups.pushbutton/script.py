@@ -15,6 +15,13 @@ import os
 
 
 #os.chdir('C:\\Users\\howar\\Documents\\MypyRevitExtensions\\Test Files')
+
+forms.alert("Select CSV file with program data.", 
+    sub_msg="Click OK to browse to file location", 
+    title="Select CSV File",
+    ok=True, 
+    cancel=True, 
+    exitscript=True)
 csv_file = forms.pick_file(files_filter='CSV files | *.csv')
 
 programCsv = open(csv_file)
@@ -188,6 +195,7 @@ yMroomBreak = 2 # for multiple room breaks
 origx = 0
 origy = 0
 
+#generate room data structure from data pulled from csv file
 for room in programData:
     name = room[0]
     qty = room[1]
