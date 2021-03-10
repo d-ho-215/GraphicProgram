@@ -1,0 +1,13 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Graphic Program - Select Source File"
+        Width = "350" Height = "200" ResizeMode="NoResize">
+    <StackPanel Margin="5">
+        <Label Content="Source CSV File:" />
+        <Label Content="" />
+        <Button HorizontalAlignment="Right" Width="50" Click="browse_file">Browse</Button>
+        <Button HorizontalAlignment="Right" Width="50" Margin="0,50,0,0" Click="create">Create</Button>
+    </StackPanel>
+
+
+</Window>
