@@ -2,45 +2,58 @@ __title__ = "Groups"
 __doc__ = "Draw some groups"
 __author__ = "Daniel Howard, Ballinger"
 
+#part of UI / XAML imports
+import clr
+clr.AddReference('System.Windows.Forms')
+clr.AddReference('IronPython.Wpf')
+
+from pyrevit import UI #part of ui / XAML imports
+from pyrevit import script 
+xamlfile = script.get_bundle_file('ui.xaml')
+
+import wpf
+from System import Windows
+
 #from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory, Transaction
 from Autodesk.Revit.DB import *
 from Autodesk.Revit.Creation import *
 from pyrevit import revit, DB
-from pyrevit import forms
+#from pyrevit import forms #for basic file selection tool
 from System.Collections.Generic import List #import ILists type
 
 import math
 import csv
 import os
 
+class MyWindow(Windows.Window):
+    def __init__(self):
+        wpf.LoadComponent(self, xamlfile)
 
-#os.chdir('C:\\Users\\howar\\Documents\\MypyRevitExtensions\\Test Files')
-csv_file = forms.pick_file(files_filter='CSV files | *.csv')
+    def create(self, sender, args):
+        UI.TaskDialog.Show("Title","Create button is working")
+        create_graphic()
+        
+    def browse_file(self, sender, args):
+        UI.TaskDialog.Show("Title","Browse button is working")
+        
 
-programCsv = open(csv_file)
-programReader = csv.reader(programCsv)
-programData = list(programReader)
-programCsv.close()
+"""
+class MyWindow(Windows.Window):
+    def __init__(self):
+        wpf.LoadComponent(self, xamlfile)
 
-#remove first line, since that's headers in the Excel / CSV file
-programData.pop(0)
+    @property
+    def user_name(self):
+        return self.textbox.Text
 
-rooms = []
-depts = {}
-
-### Name, Quantity, Square Ft, Department, MaxWidth, MaxHeight
-
-doc = __revit__.ActiveUIDocument.Document
-cdoc = doc.Create
-
-levID = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Levels).WhereElementIsNotElementType().FirstElementId()
-lev = doc.GetElement(levID)
-
-filledRegionTypeCollector = list(FilteredElementCollector(doc).OfClass(DB.FilledRegionType))
-filledRegionTypeID = filledRegionTypeCollector[0].Id
-
-textTypeCollector = list(FilteredElementCollector(doc).OfClass(DB.TextNoteType))
-textTypeID = textTypeCollector[0].Id
+    def create(self, sender, args):
+        UI.TaskDialog.Show(
+            "Hello World",
+            "Hello {}".format(self.user_name or 'World'))
+    
+    def browse_file(self, sender, args):
+        pass
+"""
 
 class box:
     global doc, cdoc, levID, lev
@@ -177,31 +190,6 @@ class group(box):
             
 
 
-
-t = Transaction(doc, "Create Program Diagram")
-t.Start()
-
-xoffset = 2
-yoffset = 2
-ybreak = 20
-yMroomBreak = 2 # for multiple room breaks
-origx = 0
-origy = 0
-
-for room in programData:
-    name = room[0]
-    qty = room[1]
-    size = room[2]
-    dept = room[3]
-    maxWidth = room[4]
-    maxHeight = room[5]
-    
-    if dept not in depts:
-        depts[dept] = group(dept)
-    
-    dR = dRoom(name, qty, size, dept, maxWidth, maxHeight)
-    depts[dept].addroom(dR)
-
 """
     if dR.qty > 1:
         for i in range(dR.qty):
@@ -217,41 +205,107 @@ for room in programData:
         dR.label()
         origy -= (dR.height + ybreak)
 """
-for dept in depts.values():
-    dept.draw(origx, origy)
-    dept.label()
-    rOrigx = origx + xoffset
-    rOrigy = origy - yoffset - 10 #extra -10 for text height
-    maxRheight = 0
-    for room in dept.rooms:
-        room.rect()
-#        if rOrigx + room.width + 5 >= origx + dept.width:
-#            rOrigx = origx + xoffset
-#            rOrigy -= maxRheight + ybreak
-        if room.qty > 1:
-            for i in range(room.qty):
-                if i == 0:
-                    room.draw(rOrigx, rOrigy)
-                    room.label()
-                elif rOrigx + (2 *room.width) + xoffset >= dept.xw:
-                    rOrigx = dept.x + xoffset
-                    rOrigy -= (room.height + yMroomBreak)
-                    room.draw(rOrigx, rOrigy)
-                else:
-                    rOrigx += (room.width + xoffset)
-                    room.draw(rOrigx, rOrigy)
-        else:
-            room.draw(rOrigx, rOrigy)
-            room.label()
-        rOrigx = dept.x + xoffset
-        rOrigy -= (room.height + ybreak)
 
-    origx += dept.width + 5
-    origy = 0
+def create_graphic():
+    global origx, origy, xoffset, yoffset, yMroomBreak, ybreak
+    for dept in depts.values():
+        dept.draw(origx, origy)
+        dept.label()
+        rOrigx = origx + xoffset
+        rOrigy = origy - yoffset - 10 #extra -10 for text height
+        maxRheight = 0
+        for room in dept.rooms:
+            room.rect()
+    #        if rOrigx + room.width + 5 >= origx + dept.width:
+    #            rOrigx = origx + xoffset
+    #            rOrigy -= maxRheight + ybreak
+            if room.qty > 1:
+                for i in range(room.qty):
+                    if i == 0:
+                        room.draw(rOrigx, rOrigy)
+                        room.label()
+                    elif rOrigx + (2 *room.width) + xoffset >= dept.xw:
+                        rOrigx = dept.x + xoffset
+                        rOrigy -= (room.height + yMroomBreak)
+                        room.draw(rOrigx, rOrigy)
+                    else:
+                        rOrigx += (room.width + xoffset)
+                        room.draw(rOrigx, rOrigy)
+            else:
+                room.draw(rOrigx, rOrigy)
+                room.label()
+            rOrigx = dept.x + xoffset
+            rOrigy -= (room.height + ybreak)
+
+        origx += dept.width + 5
+        origy = 0
 
     
     #print(dR.name, dR.size, dR.dept, "mW= ", dR.mW, "mH= ", dR.mH, dR.width, dR.height)
 
 
+rooms = []
+depts = {}
+
+xoffset = 2
+yoffset = 2
+ybreak = 20
+yMroomBreak = 2 # for multiple room breaks
+origx = 0
+origy = 0
+
+os.chdir('C:\\Users\\howar\\Documents\\MypyRevitExtensions\\Test Files')
+
+#basic file import tool
+#csv_file = forms.pick_file(files_filter='CSV files | *.csv')
+
+#programCsv = open(csv_file)
+programCsv = open("Test Program.csv")
+programReader = csv.reader(programCsv)
+programData = list(programReader)
+programCsv.close()
+
+#remove first line, since that's headers in the Excel / CSV file
+programData.pop(0)
+
+
+
+### Name, Quantity, Square Ft, Department, MaxWidth, MaxHeight
+
+doc = __revit__.ActiveUIDocument.Document
+cdoc = doc.Create
+
+levID = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Levels).WhereElementIsNotElementType().FirstElementId()
+lev = doc.GetElement(levID)
+
+filledRegionTypeCollector = list(FilteredElementCollector(doc).OfClass(DB.FilledRegionType))
+filledRegionTypeID = filledRegionTypeCollector[0].Id
+
+textTypeCollector = list(FilteredElementCollector(doc).OfClass(DB.TextNoteType))
+textTypeID = textTypeCollector[0].Id
+
+for room in programData:
+    name = room[0]
+    qty = room[1]
+    size = room[2]
+    dept = room[3]
+    maxWidth = room[4]
+    maxHeight = room[5]
+
+if dept not in depts:
+    depts[dept] = group(dept)
+    
+t = Transaction(doc, "Create Program Diagram")
+t.Start()
+
+dR = dRoom(name, qty, size, dept, maxWidth, maxHeight)
+depts[dept].addroom(dR)
+    
+    
+    
+
+
+
+MyWindow().ShowDialog()
 
 t.Commit()
