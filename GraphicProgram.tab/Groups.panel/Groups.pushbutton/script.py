@@ -1,5 +1,5 @@
-__title__ = "Groups"
-__doc__ = "Draw some groups"
+__title__ = "Graphic Program"
+__doc__ = "Generate a graphic program from CSV data file."
 __author__ = "Daniel Howard, Ballinger"
 
 #from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory, Transaction
@@ -56,10 +56,15 @@ for frt in frtc:
     
 #forms.alert(str(filledRegionTypes))
 
+textTypes = {}
+#textTypeCollector = list(FilteredElementCollector(doc).OfClass(DB.TextNoteType))
+#textTypeID = textTypeCollector[0].Id
+ttc = FilteredElementCollector(doc).OfClass(DB.TextNoteType)
+for tt in ttc:
+    ttname = tt.LookupParameter('Type Name').AsString()
+    ttid = tt.Id
+    textTypes[ttname] = ttid
 
-
-textTypeCollector = list(FilteredElementCollector(doc).OfClass(DB.TextNoteType))
-textTypeID = textTypeCollector[0].Id
 
 class box:
     global doc, cdoc, levID, lev
@@ -153,9 +158,11 @@ class dRoom(box):
         
     def label(self):
         #TextNote.Create(document, viewId, XYZ, text, typeId)
-        self.textPt = XYZ(self.x, self.y + 10, 0)
-        titleText = "{name}  \n[ {qty} @ {size} NSF ]".format(name = self.name, qty = self.qty, size = self.size)
-        TextNote.Create(doc, revit.active_view.Id, self.textPt, titleText, textTypeID)
+        self.roomTextPt = XYZ(self.x, self.y + 14, 0)
+        self.infoTextPt = XYZ(self.x, self.y + 6, 0)
+        infoText = "[ {qty} @ {size} NSF ]".format(qty = self.qty, size = self.size)
+        TextNote.Create(doc, revit.active_view.Id, self.roomTextPt, self.name, textTypes["GP Room Title"])
+        TextNote.Create(doc, revit.active_view.Id, self.infoTextPt, infoText, textTypes["GP Room Info"])
 
 class group(box):
     def __init__(self, name, size = 0, maxWidth = 200, maxHeight = 300):
@@ -195,9 +202,8 @@ class group(box):
             
     def label(self):
         #TextNote.Create(document, viewId, XYZ, text, typeId)
-        self.textPt = XYZ(self.x, self.y + 10, 0)
-        titleText = "Department: {name}".format(name = self.name)
-        TextNote.Create(doc, revit.active_view.Id, self.textPt, titleText, textTypeID)
+        self.textPt = XYZ(self.x, self.y + 20, 0)
+        TextNote.Create(doc, revit.active_view.Id, self.textPt, self.name, textTypes["GP Dept Title"])
             
 
 
@@ -246,7 +252,7 @@ for dept in depts.values():
     dept.draw(origx, origy)
     dept.label()
     rOrigx = origx + xoffset
-    rOrigy = origy - yoffset - 10 #extra -10 for text height
+    rOrigy = origy - ybreak
     maxRheight = 0
     for room in dept.rooms:
         room.rect()
