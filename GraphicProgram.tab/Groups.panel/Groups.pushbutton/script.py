@@ -44,7 +44,19 @@ levID = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Levels).Whe
 lev = doc.GetElement(levID)
 
 filledRegionTypeCollector = list(FilteredElementCollector(doc).OfClass(DB.FilledRegionType))
-filledRegionTypeID = filledRegionTypeCollector[0].Id
+filledRegionTypeDefaultID = filledRegionTypeCollector[0].Id
+
+#create dictionary to store type IDs as values for type name key - allows selection based on dept / group name
+filledRegionTypes = {}
+frtc = FilteredElementCollector(doc).OfClass(DB.FilledRegionType)
+for frt in frtc:
+    frtname = frt.LookupParameter('Type Name').AsString()
+    frtid = frt.Id
+    filledRegionTypes[frtname] = frtid
+    
+#forms.alert(str(filledRegionTypes))
+
+
 
 textTypeCollector = list(FilteredElementCollector(doc).OfClass(DB.TextNoteType))
 textTypeID = textTypeCollector[0].Id
@@ -74,7 +86,12 @@ class box:
         #not room would be a group
         if self.isRoom:
             self.cLoop = CurveLoop.Create(List[Curve]([self.L1, self.L2, self.L3, self.L4]))
-            FilledRegion.Create(doc, filledRegionTypeID, revit.active_view.Id, List[CurveLoop]([self.cLoop]))
+            deptname = self.dept
+            if deptname in filledRegionTypes:
+                filledRegionTypeId = filledRegionTypes[deptname]
+            else:
+                filledRegionTypeId = filledRegionTypeDefaultID
+            FilledRegion.Create(doc, filledRegionTypeId, revit.active_view.Id, List[CurveLoop]([self.cLoop]))
         else:
             self.cArray = CurveArray()
             self.cArray.Append(self.L1)
@@ -197,10 +214,10 @@ origy = 0
 
 #generate room data structure from data pulled from csv file
 for room in programData:
-    name = room[0]
+    name = room[0].upper()
     qty = room[1]
     size = room[2]
-    dept = room[3]
+    dept = room[3].upper()
     maxWidth = room[4]
     maxHeight = room[5]
     
