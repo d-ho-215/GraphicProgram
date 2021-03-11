@@ -185,6 +185,7 @@ class group(box):
         self.offset = 5
         self.currentx = 0
         self.currenty = 0
+        self.netarea = 0
 
     def addroom(self, room):
         self.rooms.append(room)
@@ -203,7 +204,17 @@ class group(box):
     def label(self):
         #TextNote.Create(document, viewId, XYZ, text, typeId)
         self.textPt = XYZ(self.x, self.y + 20, 0)
-        TextNote.Create(doc, revit.active_view.Id, self.textPt, self.name, textTypes["GP Dept Title"])
+        titleText = "{name} - {area} NSF".format(name = self.name, area = self.netarea)
+        TextNote.Create(doc, revit.active_view.Id, self.textPt, titleText, textTypes["GP Dept Title"])
+        
+    def totalArea(self):
+        for room in self.rooms:
+            if room.qty > 1:
+                netroomarea = room.size * room.qty
+            else:
+                netroomarea = room.size
+            self.netarea += netroomarea
+                
             
 
 
@@ -249,6 +260,7 @@ for room in programData:
         origy -= (dR.height + ybreak)
 """
 for dept in depts.values():
+    dept.totalArea()
     dept.draw(origx, origy)
     dept.label()
     rOrigx = origx + xoffset
