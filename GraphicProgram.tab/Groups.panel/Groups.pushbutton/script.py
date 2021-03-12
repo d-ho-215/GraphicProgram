@@ -26,14 +26,23 @@ csv_file = forms.pick_file(files_filter='CSV files | *.csv')
 
 programCsv = open(csv_file)
 programReader = csv.reader(programCsv)
-programData = list(programReader)
+rawProgramData = list(programReader)
 programCsv.close()
 
 #remove first line, since that's headers in the Excel / CSV file
-programData.pop(0)
+#programData.pop(0)
+
+#filter raw data to remove non-room infoText
+programData = []
+
+for row in rawProgramData:
+    if row[2].upper() == "X":
+        if row[5] != "0" and row[5] != "":
+            programData.append(row)
 
 rooms = []
 depts = {}
+deptOrders = {}
 
 ### Name, Quantity, Square Ft, Department, MaxWidth, MaxHeight
 
@@ -231,13 +240,23 @@ origy = 0
 
 #generate room data structure from data pulled from csv file
 for room in programData:
-    name = room[0].upper()
-    qty = room[1]
-    size = room[2]
-    dept = room[3].upper()
-    maxWidth = room[4]
-    maxHeight = room[5]
+#    name = room[0].upper()
+#    qty = room[1]
+#    size = room[2]
+#    dept = room[3].upper()
+#    maxWidth = room[4]
+#    maxHeight = room[5]
     
+    name = room[4].upper()
+    qty = room[5]
+    size = room[6]
+    dept = room[0]
+    maxWidth = None
+    maxHeight = None
+    deptOrder = room[1]
+    
+    if deptOrder not in deptOrders:
+        deptOrders[deptOrder] = dept
     if dept not in depts:
         depts[dept] = group(dept)
     
@@ -259,7 +278,10 @@ for room in programData:
         dR.label()
         origy -= (dR.height + ybreak)
 """
-for dept in depts.values():
+
+#for i in range(len(deptOrders)):
+for deptnum in sorted(deptOrders):
+    dept = depts[deptOrders[deptnum]]
     dept.totalArea()
     dept.draw(origx, origy)
     dept.label()
