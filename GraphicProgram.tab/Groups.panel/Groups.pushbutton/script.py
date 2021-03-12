@@ -26,14 +26,20 @@ csv_file = forms.pick_file(files_filter='CSV files | *.csv')
 
 programCsv = open(csv_file)
 programReader = csv.reader(programCsv)
-programData = list(programReader)
+rawProgramData = list(programReader)
 programCsv.close()
 
 #remove first line, since that's headers in the Excel / CSV file
-programData.pop(0)
+#programData.pop(0)
 
+programData = []
 rooms = []
 depts = {}
+
+for row in rawProgramData:
+    if row[2].upper() =="X":
+        if row[5] != "0" and row[5] != "" and row[5] != "-":
+            programData.append(row)
 
 ### Name, Quantity, Square Ft, Department, MaxWidth, MaxHeight
 
@@ -231,13 +237,21 @@ origy = 0
 
 #generate room data structure from data pulled from csv file
 for room in programData:
-    name = room[0].upper()
-    qty = room[1]
-    size = room[2]
-    dept = room[3].upper()
-    maxWidth = room[4]
-    maxHeight = room[5]
-    
+#    name = room[0].upper()
+#    qty = room[1]
+#    size = room[2]
+#    dept = room[3].upper()
+#    maxWidth = room[4]
+#    maxHeight = room[5]
+    name = room[4].upper()
+    qty = room[5]
+    size = room[6]
+    dept = room[0]
+    maxWidth = None
+    maxHeight = None
+    deptOrder = room[1]
+
+
     if dept not in depts:
         depts[dept] = group(dept)
     
